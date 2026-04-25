@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>星空探索者 - 梦幻画廊</title>
+    <!-- React & Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        body { background-color: #010410; margin: 0; overflow-x: hidden; }
+        /* 隐藏滚动条但保留功能 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        /**
+         * 自定义图标组件 (SVG)
+         * 避免了使用外部图标库可能产生的 'Infinity' 标识符冲突错误
+         */
+        const Icon = ({ name, size = 24, className = "" }) => {
+            const icons = {
+                Compass: <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22ZM16.24 7.76L14.12 14.12L7.76 16.24L9.88 9.88L16.24 7.76Z" />,
+                Star: <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />,
+                Moon: <path d="M21 12.79C20.8427 14.7761 20.203 16.6852 19.1582 18.3073C18.1135 19.9295 16.6911 21.2239 15.029 22.0441C13.3669 22.8644 11.5113 23.1895 9.6646 22.9835C7.81788 22.7775 6.03158 22.0461 4.50126 20.8711C2.97095 19.696 1.73122 18.1073 0.912592 16.2753C0.0939615 14.4433 -0.283526 12.4168 0.120404 10.4209C0.524335 8.4249 1.69741 6.51133 3.50493 4.88172C5.31245 3.25211 7.70295 1.95155 10.41 1.11C8.24354 2.11545 6.37688 3.73147 5.03473 5.73359C3.69258 7.73571 2.92934 10.0416 2.84074 12.4132C2.75214 14.7848 3.34212 17.1189 4.53753 19.1132C5.73293 21.1075 7.48705 22.6789 9.58156 23.6334C11.6761 24.5878 14.0202 24.8816 16.3129 24.478C18.6056 24.0744 20.7483 22.9912 22.464 21.3651C24.1798 19.739 25.394 17.6333 25.9525 15.3113C26.511 12.9893 26.3904 10.5513 25.606 8.30312C26.0681 9.75713 26.2415 11.2755 26.1183 12.7845" />,
+                Volume2: <path d="M11 5L6 9H2V15H6L11 19V5ZM19.07 4.93C20.9447 6.80528 21.9979 9.34836 21.9979 12C21.9979 14.6516 20.9447 17.1947 19.07 19.07M15.54 8.46C16.4773 9.39764 17.0039 10.6692 17.0039 12C17.0039 13.3308 16.4773 14.6024 15.54 15.54" />,
+                VolumeX: <path d="M11 5L6 9H2V15H6L11 19V5ZM23 9L17 15M17 9L23 15" />,
+                X: <path d="M18 6L6 18M6 6L18 18" />,
+                ChevronRight: <path d="M9 18L15 12L9 6" />,
+                Info: <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" />,
+                BookOpen: <path d="M2 3H8C9.06087 3 10.0783 3.42143 10.8284 4.17157C11.5786 4.92172 12 5.93913 12 7V21C12 20.4696 11.7893 19.9609 11.4142 19.5858C11.0391 19.2107 10.5304 19 10 19H2V3ZM22 3H16C14.9391 3 13.9217 3.42143 13.1716 4.17157C12.4214 4.92172 12 5.93913 12 7V21C12 20.4696 12.2107 19.9609 12.5858 19.5858C12.9609 19.2107 13.4696 19 14 19H22V3Z" />,
+                Sparkles: <path d="M12 3L14.59 9.41L21 12L14.59 14.59L12 21L9.41 14.59L3 12L9.41 9.41L12 3Z" />
+            };
+            return (
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                    {icons[name]}
+                </svg>
+            );
+        };
+
+        const BG_MUSIC_URL = 'https://img.heliar.top/file/1777103911329_兜圈_洛克王国版.mp3'; 
+
+        const CONSTELLATIONS = [
+            { id: 'aries', name: '白羊座', latin: 'Aries', date: '3.21 - 4.19', element: '火象', description: '黄道十二星座之首，象征着新的开始与勇敢。', myth: '金色的公羊克律索马罗斯，载着王子逃离苦难，它的角永远指向勇气。', stars: '娄宿三、娄宿一、娄宿二', color: 'from-orange-600/40', img: 'https://i.postimg.cc/8CfTMc1z/bai-yang-zuo.jpg' },
+            { id: 'taurus', name: '金牛座', latin: 'Taurus', date: '4.20 - 5.20', element: '土象', description: '天空中最引人注目的星座之一，拥有明亮的毕宿五。', myth: '宙斯化身为温顺的白牛，带着欧罗巴公主游历大地，最终升入星空。', stars: '毕宿五、昂宿星团', color: 'from-emerald-600/40', img: 'https://i.postimg.cc/nz1gDfQV/jin-niu-zuo.jpg' },
+            { id: 'gemini', name: '双子座', latin: 'Gemini', date: '5.21 - 6.21', element: '风象', description: '象征着双生子，是天空中两个非常靠近的亮星。', myth: '兄弟情深的波吕丢刻斯与卡斯托耳，一人为神一人为人，最终同聚星海。', stars: '北河二、北河三', color: 'from-sky-600/40', img: 'https://i.postimg.cc/Ssmtq1tN/shuang-zi-zuo.jpg' },
+            { id: 'cancer', name: '巨蟹座', latin: 'Cancer', date: '6.22 - 7.22', element: '水象', description: '虽然是一个较暗的星座，但它代表了母性与保护。', myth: '守护赫拉的巨大螃蟹，即使面对强大的赫拉克勒斯也毫不退缩。', stars: '柳宿增九、积尸气星团', color: 'from-indigo-600/40', img: 'https://i.postimg.cc/3wTtCbhL/ju-xie-zuo.jpg' },
+            { id: 'leo', name: '狮子座', latin: 'Leo', date: '7.23 - 8.22', element: '火象', description: '威严且明亮，是夏季夜空的焦点。', myth: '尼米亚森林的雄狮，化身为星空中最闪耀的猎手。', stars: '轩辕十四、五帝座一', color: 'from-amber-600/40', img: 'https://i.postimg.cc/Xv4gyGKk/shi-zi-zuo.jpg' },
+            { id: 'virgo', name: '处女座', latin: 'Virgo', date: '8.23 - 9.22', element: '土象', description: '全天第二大星座，代表丰收与正义。', myth: '正义女神手持麦穗，在人间纷乱时选择回归星空守护秩序。', stars: '角宿一', color: 'from-teal-600/40', img: 'https://i.postimg.cc/8zVRqJY1/chu-nu-zuo.jpg' },
+            { id: 'libra', name: '天秤座', latin: 'Libra', date: '9.23 - 10.23', element: '风象', description: '唯一一个由无生命物体代表的黄道星座。', myth: '衡量善恶的天平，象征着宇宙间的平衡与神圣的正义。', stars: '氐宿四、氐宿一', color: 'from-blue-600/40', img: 'https://i.postimg.cc/jjMyw8Sn/tian-cheng-zuo.jpg' },
+            { id: 'scorpio', name: '天蝎座', latin: 'Scorpio', date: '10.24 - 11.22', element: '水象', description: '形态极其神似天蝎，是夏季星空的标志。', myth: '大地母亲派出的毒蝎，它的一举一动都牵动着银河的流动。', stars: '心宿二', color: 'from-red-600/40', img: 'https://i.postimg.cc/qMqWPDzn/tian-xie-zuo.jpg' },
+            { id: 'sagittarius', name: '射手座', latin: 'Sagittarius', date: '11.23 - 12.21', element: '火象', description: '位于银河系中心方向，恒星密集。', myth: '智者喀戎，半人半马的射手，他的箭永远指向未知的真理。', stars: '箕宿三、斗宿四', color: 'from-purple-600/40', img: 'https://i.postimg.cc/7ZTd6C12/she-shou-zuo.jpg' },
+            { id: 'capricorn', name: '摩羯座', latin: 'Capricornus', date: '12.22 - 1.19', element: '土象', description: '古老的星座，形如鱼尾山羊。', myth: '潘神在危机中跳入水中，下半身化鱼，上半身为羊，象征生命的多样。', stars: '垒壁阵四', color: 'from-cyan-600/40', img: 'https://i.postimg.cc/B6Nwy23d/mo-jie-zuo.jpg' },
+            { id: 'aquarius', name: '水瓶座', latin: 'Aquarius', date: '1.20 - 2.18', element: '风象', description: '代表着智慧的流动与博爱。', myth: '倒出圣水的少年，为神界提供甘霖，也为大地带来智慧的源泉。', stars: '虚宿一、危宿一', color: 'from-violet-600/40', img: 'https://i.postimg.cc/2ybFwWSG/shui-ping-zuo.jpg' },
+            { id: 'pisces', name: '双鱼座', latin: 'Pisces', date: '2.19 - 3.20', element: '水象', description: '两根丝带连接在一起的鱼。', myth: '阿佛洛狄忒和厄洛斯化身的双鱼，用丝带相连，永不分离。', stars: '外屏七', color: 'from-pink-600/40', img: 'https://i.postimg.cc/FF82Qgcp/shuang-yu-zuo.jpg' },
+        ];
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('explore');
+            const [selectedConst, setSelectedConst] = useState(null);
+            const [scrolled, setScrolled] = useState(false);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const audioRef = useRef(null);
+
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 20);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const toggleMusic = () => {
+                if (!audioRef.current) return;
+                if (isPlaying) {
+                    audioRef.current.pause();
+                } else {
+                    audioRef.current.play().catch(err => console.log("Autoplay blocked"));
+                }
+                setIsPlaying(!isPlaying);
+            };
+
+            const StarBackground = () => (
+                <div className="fixed inset-0 bg-[#020617] -z-10 overflow-hidden">
+                    {[...Array(150)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="absolute rounded-full bg-white animate-pulse"
+                            style={{
+                                top: `${Math.random() * 100}%`,
+                                left: `${Math.random() * 100}%`,
+                                width: `${Math.random() * 2}px`,
+                                height: `${Math.random() * 2}px`,
+                                opacity: Math.random(),
+                                animationDuration: `${Math.random() * 4 + 2}s`
+                            }}
+                        />
+                    ))}
+                    <div className="absolute top-[-20%] right-[-10%] w-[80%] h-[80%] bg-indigo-900/10 blur-[150px] rounded-full animate-pulse-slow" />
+                </div>
+            );
+
+            return (
+                <div className="min-h-screen text-slate-200 font-sans selection:bg-indigo-500/40">
+                    <StarBackground />
+                    <audio ref={audioRef} src={BG_MUSIC_URL} loop />
+
+                    <nav className={`fixed top-0 w-full z-40 transition-all duration-500 ${scrolled ? 'bg-slate-950/90 backdrop-blur-xl py-4 border-b border-white/5' : 'bg-transparent py-8'}`}>
+                        <div className="container mx-auto px-8 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                    <Icon name="Compass" size={22} className="text-white" />
+                                </div>
+                                <span className="text-lg font-black tracking-tighter uppercase">Stellar<span className="text-indigo-500">Explorer</span></span>
+                            </div>
+                            <div className="flex gap-6">
+                                <button onClick={() => setActiveTab('explore')} className={`text-[11px] font-black tracking-[0.2em] uppercase transition-all ${activeTab === 'explore' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>星座百科</button>
+                                <button onClick={() => setActiveTab('knowledge')} className={`text-[11px] font-black tracking-[0.2em] uppercase transition-all ${activeTab === 'knowledge' ? 'text-white' : 'text-slate-500 hover:text-slate-300'}`}>天文常识</button>
+                            </div>
+                        </div>
+                    </nav>
+
+                    <header className="pt-52 pb-24 px-8 text-center relative">
+                        <div className="relative z-10 max-w-4xl mx-auto">
+                            <div className="inline-block px-4 py-1.5 mb-8 rounded-full bg-indigo-500/5 border border-white/10 text-indigo-400 text-[10px] font-black uppercase tracking-[0.4em]">探索 88 星座之美</div>
+                            <h1 className="text-6xl md:text-8xl font-black mb-10 tracking-tighter leading-none">寻找你的<span className="text-transparent bg-clip-text bg-gradient-to-b from-indigo-200 to-indigo-800">守护星辰</span></h1>
+                            <p className="text-slate-500 text-lg max-w-2xl mx-auto">融合希腊神话与天文知识，带你领略唯美星空艺术。</p>
+                        </div>
+                    </header>
+
+                    <main className="container mx-auto px-8 pb-40">
+                        {activeTab === 'explore' ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10">
+                                {CONSTELLATIONS.map((c) => (
+                                    <div key={c.id} onClick={() => setSelectedConst(c)} className="group relative bg-slate-900/30 border border-white/5 hover:border-indigo-500/30 rounded-[2.5rem] overflow-hidden cursor-pointer transition-all duration-500 hover:-translate-y-2">
+                                        <div className="h-64 relative overflow-hidden bg-slate-950">
+                                            <img src={c.img} alt={c.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-70 group-hover:opacity-90" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950 to-transparent" />
+                                        </div>
+                                        <div className="p-8">
+                                            <div className="flex justify-between items-end mb-4">
+                                                <div><h3 className="text-3xl font-bold mb-1 tracking-tight">{c.name}</h3><p className="text-[10px] text-slate-500 font-mono tracking-widest">{c.latin}</p></div>
+                                                <span className="text-[10px] text-indigo-500 font-black mb-1">{c.date}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-white text-[10px] font-black uppercase tracking-[0.2em] group-hover:text-indigo-400 transition-colors">
+                                                查看详情 <Icon name="ChevronRight" size={14} className="group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="max-w-4xl mx-auto space-y-16">
+                                <section className="bg-white/[0.02] border border-white/10 p-16 rounded-[4rem] text-center">
+                                    <Icon name="Moon" className="text-indigo-500 mx-auto mb-8" size={48} />
+                                    <h2 className="text-4xl font-bold mb-8">什么是星座？</h2>
+                                    <p className="text-slate-400 text-lg leading-relaxed">星座是指天空中一组恒星的组合。在国际天文学联合会的规定下，全天共有88个正式星座。</p>
+                                </section>
+                            </div>
+                        )}
+                    </main>
+
+                    <div className="fixed bottom-12 left-1/2 -translate-x-1/2 bg-slate-950/80 backdrop-blur-2xl border border-slate-800/50 p-2.5 rounded-[2rem] flex gap-2 shadow-2xl z-40">
+                        <button onClick={() => setActiveTab('explore')} className={`flex items-center gap-2 px-8 py-4 rounded-[1.5rem] transition-all ${activeTab === 'explore' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                            <Icon name="Star" size={18} /> <span className="text-sm font-black uppercase tracking-wider">百科</span>
+                        </button>
+                        <button onClick={() => setActiveTab('knowledge')} className={`flex items-center gap-2 px-8 py-4 rounded-[1.5rem] transition-all ${activeTab === 'knowledge' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                            <Icon name="BookOpen" size={18} /> <span className="text-sm font-black uppercase tracking-wider">常识</span>
+                        </button>
+                        <button onClick={toggleMusic} className={`w-12 h-12 flex items-center justify-center rounded-full transition-all ${isPlaying ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-500 hover:text-white'}`}>
+                            {isPlaying ? <Icon name="Volume2" size={20} /> : <Icon name="VolumeX" size={20} />}
+                        </button>
+                    </div>
+
+                    {selectedConst && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-md">
+                            <div className="bg-slate-900 border border-slate-700/50 w-full max-w-5xl rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row h-full max-h-[85vh] relative animate-in zoom-in duration-300">
+                                <div className={`w-full md:w-3/5 relative bg-gradient-to-br ${selectedConst.color} to-slate-950 h-full`}>
+                                    <img src={selectedConst.img} alt={selectedConst.name} className="w-full h-full object-cover mix-blend-lighten opacity-80" />
+                                    <div className="absolute bottom-8 left-8">
+                                        <h2 className="text-5xl font-black text-white mb-2 drop-shadow-md">{selectedConst.name}</h2>
+                                        <p className="text-indigo-300 font-mono tracking-widest uppercase">{selectedConst.latin}</p>
+                                    </div>
+                                </div>
+                                <div className="w-full md:w-2/5 p-12 overflow-y-auto flex flex-col justify-between bg-slate-900/50">
+                                    <button onClick={() => setSelectedConst(null)} className="absolute top-8 right-8 p-3 hover:bg-slate-800 rounded-full text-slate-400 transition-colors"><Icon name="X" size={24} /></button>
+                                    <div className="space-y-10">
+                                        <div className="flex gap-4"><span className="px-4 py-1.5 bg-indigo-500/20 text-indigo-400 text-[10px] font-black rounded-full border border-indigo-500/30 uppercase tracking-widest">{selectedConst.element}</span><span className="text-slate-500 text-sm">{selectedConst.date}</span></div>
+                                        <section><h3 className="text-white font-bold flex items-center gap-3 mb-4 text-lg"><Icon name="Info" size={20} className="text-indigo-500" /> 星座概观</h3><p className="text-slate-400 text-sm leading-relaxed">{selectedConst.description}</p></section>
+                                        <section><h3 className="text-white font-bold flex items-center gap-3 mb-4 text-lg"><Icon name="BookOpen" size={20} className="text-indigo-500" /> 神话溯源</h3><p className="text-slate-400 text-sm italic">{selectedConst.myth}</p></section>
+                                        <section><h3 className="text-white font-bold flex items-center gap-3 mb-4 text-lg"><Icon name="Sparkles" size={20} className="text-indigo-500" /> 代表恒星</h3><p className="text-slate-400 text-sm">{selectedConst.stars}</p></section>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
